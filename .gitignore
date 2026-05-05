@@ -1,0 +1,43 @@
+# Large model checkpoints - add to GitHub Releases instead
+checkpoints/
+*.pth
+*.pt
+*.safetensors
+*.ckpt
+
+# Output and results
+outputs/
+
+# Cache directories
+cache/
+__pycache__/
+*.pyc
+.cache/
+
+# Data
+data/
+*.mp4
+*.avi
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+venv/
+env/
+
+# OS
+.DS_Store
+.git_attributes
+
+# Temporary files
+*.tmp
+*.bak
