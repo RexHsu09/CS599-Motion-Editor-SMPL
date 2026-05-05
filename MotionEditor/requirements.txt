@@ -1,0 +1,91 @@
+# numpy==1.26.4
+# # huggingface_hub==0.21.4
+# # diffusers==0.21.4
+# # transformers==4.36.2
+# # accelerate==0.25.0
+# # bitsandbytes>=0.43.3
+# decord
+# diffusers==0.15.1
+# transformers>=4.25.1
+# bitsandbytes==0.35.4
+# accelerate
+# tensorboard
+# modelcards
+# omegaconf
+# einops
+# imageio==2.25.0
+# ftfy
+# opencv-python
+# timm
+# wandb
+# ipdb
+# matplotlib
+# triton
+# progressbar2==4.2.0
+# Pillow
+# python-slugify
+# addict
+# yapf
+# onnxruntime
+# pycocotools
+# PyYAML
+# requests
+# setuptools
+# supervision
+# termcolor
+# nltk
+# fairscale
+# controlnet_aux
+# Core
+torch==2.1.1
+torchvision==0.16.1
+torchaudio==2.1.1
+
+# Diffusion
+diffusers==0.15.1
+transformers==4.25.1
+huggingface-hub==0.14.1
+accelerate==0.20.3
+
+# Attention optimization
+xformers==0.0.23
+
+# Utilities
+numpy==1.24.3
+bitsandbytes==0.35.4
+einops
+imageio==2.25.0
+omegaconf
+ftfy
+opencv-python
+timm
+wandb
+ipdb
+matplotlib
+triton
+progressbar2==4.2.0
+Pillow
+python-slugify
+addict
+yapf
+onnxruntime
+pycocotools
+PyYAML
+requests
+setuptools
+supervision
+termcolor
+nltk
+fairscale
+controlnet_aux
+
+# Training
+tensorboard
+modelcards
+
+# Other
+decord
+scipy
+scikit-image
+tqdm
+safetensors
