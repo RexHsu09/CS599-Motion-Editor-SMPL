@@ -11,7 +11,7 @@ input_data:
   height: 512
   sample_start_idx: 0
   sample_frame_rate: 1
-  condition: [openposefull, depth, normal, semantic_map]
+  condition: [openposefull]
   video_suffix: .png
   condition_suffix: .png
   noise_level: 10000

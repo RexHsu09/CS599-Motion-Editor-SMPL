@@ -429,10 +429,6 @@ class MotionEditorPipeline(DiffusionPipeline):
         Returns:
             fused_last: [1, 3, H, W] - last frame of fused and projected maps
         """
-        # Initialize guidance fusion projection if not already done
-        if not hasattr(self, '_guidance_fusion_proj'):
-            self._guidance_fusion_proj = nn.Conv2d(12, 3, kernel_size=1).to(device=device, dtype=dtype)
-        
         maps = []
         map_names = ["depth", "normal", "semantic", "dwpose"]
         
@@ -473,11 +469,13 @@ class MotionEditorPipeline(DiffusionPipeline):
         
         # Stack: [F, 3, H, W] × 4 → [F, 12, H, W]
         fused = torch.cat(maps, dim=1)  # [F, 12, H, W]
-        
-        # Take last frame and project to 3 channels: [1, 3, H, W]
-        fused_last = self._guidance_fusion_proj(fused[-1:])
-        
-        return fused_last
+
+        # Project all frames to 3 channels: [F, 3, H, W]
+        # Use the trained projection from the motion adaptor
+        fused_all = self.unet.controlnet_adapter.guidance_fusion_proj(fused.to(dtype=dtype))
+
+        # Return [1, F, 3, H, W] to match skeleton[-1].unsqueeze(0) format
+        return fused_all.unsqueeze(0)
 
     def prepare_image(
         self, image, width, height, batch_size, num_images_per_prompt, device, dtype, do_classifier_free_guidance
@@ -622,7 +620,7 @@ class MotionEditorPipeline(DiffusionPipeline):
 
         # 4. Prepare image
         # Check if using new guidance fusion mode or legacy skeleton mode
-        use_guidance_fusion = depth_map is not None or normal_map is not None or semantic_map is not None or dwpose_map is not None
+        use_guidance_fusion = depth_map is not None and normal_map is not None and semantic_map is not None and dwpose_map is not None
         
         if use_guidance_fusion:
             # Multi-layer guidance fusion mode
@@ -649,8 +647,9 @@ class MotionEditorPipeline(DiffusionPipeline):
                 dtype=self.controlnet.dtype,
                 do_classifier_free_guidance=do_classifier_free_guidance,
             )
-            print(images.size())  # [2, 8, 3, 512, 512] or [2, 1, 3, 512, 512]
+            # prepare_image receives [1, F, 3, H, W] → returns [2, F, 3, H, W] (CFG duplicated)
             images = rearrange(images, "b f c h w -> (b f) c h w").to(device=self.controlnet.device, dtype=self.controlnet.dtype)
+            # images: [2*F, 3, H, W] — all frames for both uncond and cond
         else:
             assert False
 
@@ -697,12 +696,15 @@ class MotionEditorPipeline(DiffusionPipeline):
                 controlnet_latent_model_input = rearrange(controlnet_latent_model_input, "b c f h w -> (b f) c h w").to(dtype=self.controlnet.dtype)
                 controlnet_prompt_embeds = torch.cat([torch.unsqueeze(text_embeddings_input[1], dim=0), torch.unsqueeze(text_embeddings_input[3], dim=0)], dim=0)
                 controlnet_conditioning_scale = 1.0
+                
+                # images is already [2*F, 3, H, W] — all frames for uncond and cond
+                controlnet_cond = images
 
                 down_block_res_samples, mid_block_res_sample = self.controlnet(
                     controlnet_latent_model_input,
                     t,
                     encoder_hidden_states=controlnet_prompt_embeds.repeat(video_length, 1, 1),
-                    controlnet_cond=images,
+                    controlnet_cond=controlnet_cond,
                     conditioning_scale=controlnet_conditioning_scale,
                     return_dict=False,
                 )
